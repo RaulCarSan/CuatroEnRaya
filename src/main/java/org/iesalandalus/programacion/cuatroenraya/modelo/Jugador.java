@@ -2,16 +2,21 @@ package org.iesalandalus.programacion.cuatroenraya.modelo;
 
 import java.util.Objects;
 
-public record Jugador(String nombre, Ficha colorFicha) {
+public record Jugador(String nombre, Ficha colorFichas) {
 
     public Jugador{
+        validarNombre(nombre);
+        validarCalorFichas(colorFichas);
     }
 
-    private void validarNombre(String nombre) throws CuatroEnRayaExcepcion{
+    private void validarNombre(String nombre){
         Objects.requireNonNull(nombre,"El nombre no puede ser nulo.");
-        String validar = "\\d[A-Z]{1}[a-záéíóú]*";
+        String validar = "[A-Z]+[a-zA-Záéíóú ]*";
+        if (nombre.isBlank()){
+            throw new IllegalArgumentException("El nombre no puede estar en blanco.");
+        }
         if (!nombre.matches(validar)){
-            throw new CuatroEnRayaExcepcion("El nombre no es valido.");
+            throw new IllegalArgumentException("El nombre no es valido.");
         }
     }
 
@@ -21,8 +26,7 @@ public record Jugador(String nombre, Ficha colorFicha) {
 
     @Override
     public String toString() {
-        return String.format("[nombre=%s, colorFicha=%s]", nombre, colorFicha);
+        return String.format("%s (%s)", nombre, colorFichas);
     }
-
 
 }
