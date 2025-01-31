@@ -25,28 +25,26 @@ public class Tablero {
         return tablero[5][columna].estaOcupada();
     }
 
-    public boolean estaVacio(){
-        boolean ocupado = false;
-        for (int columna = 0; columna < COLUMNAS && !ocupado; columna++){
-            if (!columnaVacia(columna)){
-             ocupado = true;
-            }
-        }
-        return ocupado;
-    }
-
-    public boolean estaLleno() {
-        boolean vacio = false;
-        int columnasLlenas = 0;
-        for (int fila = 0; fila < FILAS; fila++){
-            for (int columna = 0; columna < COLUMNAS; columna++){
-                if (columnaLlena(columna)){
-                    columnasLlenas = columnasLlenas + 1;
-
+    public boolean estaVacio() {
+        for (int fila = 0; fila < FILAS; fila++) {
+            for (int columna = 0; columna < COLUMNAS; columna++) {
+                if (tablero[fila][columna].estaOcupada()) {
+                    return false;
                 }
             }
         }
-        return columnasLlenas == COLUMNAS;
+        return true;
+    }
+
+    public boolean estaLleno() {
+        for (int fila = 0; fila < FILAS; fila++) {
+            for (int columna = 0; columna < COLUMNAS; columna++) {
+                if (!tablero[fila][columna].estaOcupada()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private void comprobarFicha(Ficha ficha){
@@ -76,61 +74,70 @@ public class Tablero {
         if (filaInicial == -1){
             throw new CuatroEnRayaExcepcion("La fila esta llena.");
         }
-        return columna;
+        return filaInicial;
     }
 
-    private boolean comprobarHorizontal( int fila, Ficha ficha){
+    private boolean comprobarHorizontal(int fila, Ficha ficha) {
         int fichasSeguidas = 0;
-        for (; fila < FILAS && objetivoAlcanzado(fichasSeguidas); fila++){
-            for (int columna = 0; columna < COLUMNAS; columna++){
-                if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)){
-                    fichasSeguidas = 1 + fichasSeguidas;
+        for (int columna = 0; columna < COLUMNAS; columna++) {
+            if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)) {
+                fichasSeguidas++;
+                if (objetivoAlcanzado(fichasSeguidas)) {
+                    return true;
                 }
+            } else {
+                fichasSeguidas = 0;
             }
         }
-        return fichasSeguidas == FICHAS_IGUALES_CONSECUTIVAS_NECESARIAS;
+        return false;
     }
 
     private boolean comprobarVertical(int columna, Ficha ficha) {
         int fichasSeguidas = 0;
-        for (int fila = 0; fila < FILAS && objetivoAlcanzado(fichasSeguidas); fila++) {
-            for (; columna < COLUMNAS && tablero[fila][columna].estaOcupada(); columna++) {
-                if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)) {
-                    fichasSeguidas = 1 + fichasSeguidas;
+        for (int fila = 0; fila < FILAS; fila++) {
+            if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)) {
+                fichasSeguidas++;
+                if (objetivoAlcanzado(fichasSeguidas)) {
+                    return true;
                 }
+            } else {
+                fichasSeguidas = 0;
             }
-
         }
-        return objetivoAlcanzado(fichasSeguidas);
+        return false;
     }
 
     private int menor (int fila, int columna){
        return Math.min(fila,columna);
     }
 
-    private boolean comprobarDiagonalNE(int filaActual, int columnaActual, Ficha ficha ){
+    private boolean comprobarDiagonalNE(int filaActual, int columnaActual, Ficha ficha) {
         int fichasSeguidas = 0;
-        int desplazamiento = menor(filaActual,columnaActual);
+        int desplazamiento = menor(filaActual, columnaActual);
         int filaInicial = filaActual - desplazamiento;
         int columnaInicial = columnaActual - desplazamiento;
-        for (int fila = filaInicial, columna = columnaInicial;columnaActual < COLUMNAS && filaActual < FILAS || objetivoAlcanzado(fichasSeguidas);columnaActual--, filaActual--){
-            if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)){
-                fichasSeguidas = fichasSeguidas + 1;
+
+        for (int fila = filaInicial, columna = columnaInicial; fila < FILAS && columna < COLUMNAS; fila++, columna++) {
+
+            if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)) {
+                fichasSeguidas++;
             }
         }
-        return objetivoAlcanzado(fichasSeguidas);
+        return fichasSeguidas == FICHAS_IGUALES_CONSECUTIVAS_NECESARIAS;
     }
 
-    private boolean comprobarDiagonalNO(int filaActual, int columnaActual, Ficha ficha ){
+    private boolean comprobarDiagonalNO(int filaActual, int columnaActual, Ficha ficha) {
         int fichasSeguidas = 0;
-        int desplazamiento = menor(filaActual,columnaActual);
+        int desplazamiento = menor(filaActual, COLUMNAS - columnaActual - 1);
         int filaInicial = filaActual - desplazamiento;
         int columnaInicial = columnaActual + desplazamiento;
-        for (int fila = filaInicial, columna = columnaInicial;columnaActual < COLUMNAS && filaActual < FILAS || objetivoAlcanzado(fichasSeguidas);columnaActual++, filaActual++){
-            if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)){
-                fichasSeguidas = fichasSeguidas + 1;
+
+        for (int fila = filaInicial, columna = columnaInicial; fila < FILAS && columna >= 0; fila++, columna--) {
+            if (tablero[fila][columna].estaOcupada() && tablero[fila][columna].getFicha().equals(ficha)) {
+                fichasSeguidas++;
             }
         }
+
         return fichasSeguidas == FICHAS_IGUALES_CONSECUTIVAS_NECESARIAS;
     }
 
@@ -159,26 +166,21 @@ public class Tablero {
         return victoria;
     }
 
-    public boolean introducirFicha(int columna,Ficha ficha) throws CuatroEnRayaExcepcion{
-        boolean victoria;
+    public boolean introducirFicha(int columna, Ficha ficha) throws CuatroEnRayaExcepcion {
         comprobarColumna(columna);
         comprobarFicha(ficha);
-        if (columnaLlena(columna)){
-            throw new IllegalArgumentException("Columna llena.");
+
+        if (columnaLlena(columna)) {
+            throw new CuatroEnRayaExcepcion("Columna llena.");
         }
 
-        do {
-            int fila = getPrimeraFilaVacia(columna);
-            victoria = comprobarTirada(fila,columna,ficha);
-            fila = fila + 1;
-        }while (!victoria);
+        int fila = getPrimeraFilaVacia(columna);
+        tablero[fila][columna].setFicha(ficha);
 
-        return victoria;
+        return comprobarTirada(fila, columna, ficha);
     }
 
     //@Override
-    //public String toString() {
-      //  return String.format("[tablero=%s]", Arrays.toString(tablero));
-    //}
+    //public String toString() {return String.format("[tablero=%s]", Arrays.toString(tablero));}
 
 }
